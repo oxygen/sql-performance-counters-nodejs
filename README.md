@@ -51,7 +51,7 @@ const PerformanceCounters = require("sql-performance-counters").PerformanceCount
 module.exports = new PerformanceCounters();
 ```
 
-Then throughout your application you may acces the same instance to get the metrics or record activity:
+Then throughout your application you may access the same instance to get the metrics or record activity:
 
 
 ```JavaScript
