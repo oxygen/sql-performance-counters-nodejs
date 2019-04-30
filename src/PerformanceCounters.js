@@ -94,7 +94,7 @@ class PerformanceCounters
 	/**
 	 * Clears all counters and queries.
 	 */
-	async clear()
+	clear()
 	{
 		this._mapQueryToMetrics.clear();
 	}

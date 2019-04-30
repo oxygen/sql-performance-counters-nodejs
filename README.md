@@ -51,6 +51,8 @@ const PerformanceCounters = require("./index").PerformanceCounters;
 module.exports = new PerformanceCounters();
 ```
 
+Then throughout your application you may acces the same instance to get the metrics or record activity:
+
 
 ```JavaScript
 const performanceCounters = require("./PerformanceCountersSingleton");
@@ -71,6 +73,39 @@ console.log(performanceCounters.runningQueriesCount);
 performanceCounters.onError("SELECT 1 FROM another_table", /*nDurationMilliseconds*/ 53, /*error*/ new Error("test"));
 console.log(performanceCounters.runningQueriesCount);
 
-console.log(performanceCounters.metricsAsObject)
+
+const objMetrics = performanceCounters.metricsAsObject;
+console.log(objMetrics);
+
+
+performanceCounters.clear();
 ```
 
+
+## Usage with promise-mysql 
+If using MySQL and using [promise-mysql](https://www.npmjs.com/package/promise-mysql), you may use conveniently use the `PerformanceCounters.monkeyPatchPromiseMySQLJSConnection()` function to get started rapidly.
+
+See [PerformanceMetrics.js](./src/PerformanceMetrics.js) for how it works.
+
+```JavaScript
+const MySQL = require("promise-mysql");
+
+/* [...] */
+const pool = MySQL.createPool(mysqljsConfigObject);
+
+pool.on(
+	"connection", 
+	(connection) => {
+		PerformanceCounters.monkeyPatchPromiseMySQLJSConnection(connection);
+
+		/* [...] */
+	}
+);
+
+(async() => {
+	const connection = await MySQL.createConnection(mysqljsConfigObject);
+
+	PerformanceCounters.monkeyPatchPromiseMySQLJSConnection(connection);
+
+	/* [...] */
+})();
