@@ -1,0 +1,8 @@
+{
+    "recommendations": [
+        "dbaeumer.vscode-eslint",
+        "nilpatel.title",
+        "tobermory.es6-string-html",
+        "waderyan.gitblame"
+    ]
+}

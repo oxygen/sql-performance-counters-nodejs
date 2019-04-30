@@ -1,0 +1,27 @@
+{
+  "name": "sql-performance-counters",
+  "version": "1.0.0",
+  "description": "Simple performance metrics for SQL queries.",
+  "main": "index.js",
+  "scripts": {
+    "test": "node tests.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oxygen/sql-performance-counters-nodejs.git"
+  },
+  "author": "tiberiu.ionut.stan@gmail.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/oxygen/sql-performance-counters-nodejs/issues"
+  },
+  "homepage": "https://github.com/oxygen/sql-performance-counters-nodejs#readme",
+  "dependencies": {
+    "unparametrize-sql-query": "^1.1.1"
+  },
+  "files": [
+    "src/*",
+    "index.js",
+    "LICENSE"
+  ]
+}
