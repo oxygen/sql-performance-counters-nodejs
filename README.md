@@ -40,10 +40,10 @@ npm i sql-performance-counters
 ```
 
 ## Usage
-See [tests.js](./tests.js) and [PerformanceMetrics.js](./src/PerformanceMetrics.js) for usage.
+See [tests.js](./tests.js) and [PerformanceCounters.js](./src/PerformanceCounters.js) for usage.
 
 
-You should use `PerformanceMetrics.js` as a global singleton. For example, create a file named `PerformanceMetricsSingleton.js` with these contents:
+You should use `PerformanceCounters.js` as a global singleton. For example, create a file named `PerformanceCountersSingleton.js` with these contents:
 
 ```JavaScript
 const PerformanceCounters = require("./index").PerformanceCounters;
@@ -85,7 +85,7 @@ performanceCounters.clear();
 ## Usage with promise-mysql 
 If using MySQL and using [promise-mysql](https://www.npmjs.com/package/promise-mysql), you may use conveniently use the `PerformanceCounters.monkeyPatchPromiseMySQLJSConnection()` function to get started rapidly.
 
-See [PerformanceMetrics.js](./src/PerformanceMetrics.js) for how it works.
+See [PerformanceCounters.js](./src/PerformanceCounters.js) for how it works.
 
 ```JavaScript
 const MySQL = require("promise-mysql");
