@@ -46,7 +46,7 @@ See [tests.js](./tests.js) and [PerformanceCounters.js](./src/PerformanceCounter
 You should use `PerformanceCounters.js` as a global singleton. For example, create a file named `PerformanceCountersSingleton.js` with these contents:
 
 ```JavaScript
-const PerformanceCounters = require("./index").PerformanceCounters;
+const PerformanceCounters = require("sql-performance-counters").PerformanceCounters;
 
 module.exports = new PerformanceCounters();
 ```
