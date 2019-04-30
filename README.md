@@ -85,7 +85,6 @@ performanceCounters.clear();
 ## Usage with promise-mysql 
 If using MySQL and using [promise-mysql](https://www.npmjs.com/package/promise-mysql), you may use conveniently use the `PerformanceCounters.monkeyPatchPromiseMySQLJSConnection()` function to get started rapidly.
 
-See [PerformanceCounters.js](./src/PerformanceCounters.js) for how it works.
 
 ```JavaScript
 const MySQL = require("promise-mysql");
@@ -109,3 +108,6 @@ pool.on(
 
 	/* [...] */
 })();
+```
+
+See [PerformanceCounters.js](./src/PerformanceCounters.js) for how `PerformanceCounters.monkeyPatchPromiseMySQLJSConnection()` works.
