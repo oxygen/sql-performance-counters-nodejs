@@ -87,7 +87,7 @@ performanceCounters.clear();
 
 
 ## Usage with promise-mysql 
-If using MySQL and using [promise-mysql](https://www.npmjs.com/package/promise-mysql), you may use conveniently use the `PerformanceCounters.onMySQLPromiseConnection()` function to get started rapidly.
+If using MySQL and using [promise-mysql](https://www.npmjs.com/package/promise-mysql), you may conveniently use the `PerformanceCounters.onMySQLPromiseConnection()` function to get started rapidly.
 
 
 ```JavaScript
