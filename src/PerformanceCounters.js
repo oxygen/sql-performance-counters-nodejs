@@ -184,11 +184,9 @@ class PerformanceCounters
 		assert(connection && connection.constructor && ["Connection", "PoolConnection"].includes(connection.constructor.name));
 		
 		connection.on("enqueue", (sequence) => {
-			const self = this;
-			
 			if(sequence.constructor.name === "Query")
 			{
-				self.onQuery();
+				this.onQuery();
 
 				const nStartUnixTimeMilliseconds = new Date().getTime();
 				
@@ -218,7 +216,7 @@ class PerformanceCounters
 					if(error)
 					{
 						fnSaveDuration();
-						self.onError(sequence.sql, nDurationMilliseconds, error);
+						this.onError(sequence.sql, nDurationMilliseconds, error);
 					}
 					else
 					{
@@ -239,7 +237,7 @@ class PerformanceCounters
 						}
 						
 						fnSaveDuration();
-						self.onResult(sequence.sql, nDurationMilliseconds, nFetchedRows, nAffectedRows, nChangedRows);
+						this.onResult(sequence.sql, nDurationMilliseconds, nFetchedRows, nAffectedRows, nChangedRows);
 					}
 				};
 				
