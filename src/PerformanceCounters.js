@@ -1,4 +1,5 @@
 const unparametrize_sql_query = require("unparametrize-sql-query");
+const assert = require("assert");
 
 class PerformanceCounters
 {
@@ -47,9 +48,11 @@ class PerformanceCounters
 	/**
 	 * @param {string} strQuery 
 	 * @param {number} nDurationMilliseconds = 0
-	 * @param {any} mxResult = undefined
+	 * @param {number} nFetchedRows = 0
+	 * @param {number} nAffectedRows = 0
+	 * @param {number} nChangedRows = 0
 	 */
-	async onResult(strQuery, nDurationMilliseconds = 0, mxResult = undefined)
+	async onResult(strQuery, nDurationMilliseconds = 0, nFetchedRows = 0, nAffectedRows = 0, nChangedRows = 0)
 	{
 		nDurationMilliseconds = Math.max(0, nDurationMilliseconds - this._nLatencyMilliseconds);
 
@@ -63,10 +66,9 @@ class PerformanceCounters
 		objMetrics.successMillisecondsTotal += nDurationMilliseconds;
 		objMetrics.successMillisecondsAverage = parseInt(objMetrics.successMillisecondsTotal / objMetrics.successCount);
 
-		if(mxResult && typeof mxResult.length === "number")
-		{
-			objMetrics.rowsFetched += mxResult.length;
-		}
+		objMetrics.fetchedRows += parseInt(nFetchedRows);
+		objMetrics.affectedRows += parseInt(nAffectedRows);
+		objMetrics.changedRows += parseInt(nChangedRows);
 	}
 
 
@@ -101,7 +103,7 @@ class PerformanceCounters
 
 	
 	/**
-	 * @returns {Map<query:string, metrics:{successCount: number, errorCount: number, successMillisecondsTotal: number, rowsFetched: number, errorMillisecondsTotal: number, successMillisecondsAverage: number, errorMillisecondsAverage: number}>}
+	 * @returns {Map<query:string, metrics:{successCount: number, errorCount: number, successMillisecondsTotal: number, fetchedRows: number, affectedRows: number, changedRows: 0, errorMillisecondsTotal: number, successMillisecondsAverage: number, errorMillisecondsAverage: number}>}
 	 */
 	get metrics()
 	{
@@ -110,7 +112,7 @@ class PerformanceCounters
 
 
 	/**
-	 * @returns {Object<query:string, metrics:{successCount: number, errorCount: number, successMillisecondsTotal: number, rowsFetched: number, errorMillisecondsTotal: number, successMillisecondsAverage: number, errorMillisecondsAverage: number}>}
+	 * @returns {Object<query:string, metrics:{successCount: number, errorCount: number, successMillisecondsTotal: number, fetchedRows: number, affectedRows: number, changedRows: 0, errorMillisecondsTotal: number, successMillisecondsAverage: number, errorMillisecondsAverage: number}>}
 	 */
 	get metricsAsObject()
 	{
@@ -157,7 +159,9 @@ class PerformanceCounters
 				successMillisecondsAverage: 0,
 				errorMillisecondsAverage: 0,
 
-				rowsFetched: 0
+				fetchedRows: 0,
+				affectedRows: 0,
+				changedRows: 0
 			};
 			
 			this._mapQueryToMetrics.set(strQuery, objMetrics);
@@ -168,47 +172,85 @@ class PerformanceCounters
 
 
 	/**
-	 * Adds performance counters to promise-mysql by monkey patching the query member function of the Connection class.
+	 * Adds performance counters to promise-mysql by listening on a Connection class instance.
 	 * 
-	 * The base project mysqljs/mysql may at some point have sane support for some lower level query duration metrics (or at least events so we don't have to monkey patch)
-	 * (which will still include latency if they won't measure it once with SELECT 1 and then substract it from all durations): 
-	 * https://github.com/mysqljs/mysql/pull/1645
-	 * 
-	 * For this monkey patching of promise-mysql in particular,
-	 * keep in mind the duration includes latency, upload and download duration, and also an inordinate amount of non-query related time if the CPU is at 100%.
+	 * Keep in mind the duration includes latency, upload and download duration, and also an inordinate amount of non-query related time if the CPU is at 100%.
 	 * See the description of .setLatency() for an workaround.
 	 * 
-	 * @param {MySQL.Connection} connection
+	 * @param {MySQL.Connection|MySQL.PoolConnection} connection
 	 */
-	monkeyPatchPromiseMySQLJSConnection(connection)
+	onMySQLPromiseConnection(connection)
 	{
-		if(!connection.constructor.prototype._bPerformanceCountersPatchApplied)
-		{
+		assert(connection && connection.constructor && ["Connection", "PoolConnection"].includes(connection.constructor.name));
+		
+		connection.on("enqueue", (sequence) => {
 			const self = this;
-
-			const fnOld = connection.constructor.prototype.query;
-
-			connection.constructor.prototype._bPerformanceCountersPatchApplied = true;
-			connection.constructor.prototype.query = async function(query) {
+			
+			if(sequence.constructor.name === "Query")
+			{
 				self.onQuery();
 
 				const nStartUnixTimeMilliseconds = new Date().getTime();
-
-				try
-				{
-					const mxResult = await fnOld.apply(this, [...arguments]);
-					self.onResult(query.sql || query, new Date().getTime() - nStartUnixTimeMilliseconds, mxResult);
+				
+				let nDurationMilliseconds = 0;
+				let error = null;
+				
+				const fnSaveDuration = () => {
+					if(!nDurationMilliseconds)
+					{
+						nDurationMilliseconds = new Date().getTime() - nStartUnixTimeMilliseconds;
+					}
+				};
+				
+				
+				const fnOnError = (_error) => {
+					error = _error;
+				};
+				
+				const fnOnEnd = () => {
+					sequence.removeListener("fields", fnSaveDuration);
+					sequence.removeListener("error", fnSaveDuration);
+					sequence.removeListener("error", fnOnEnd);
+					sequence.removeListener("error", fnOnError);
+					sequence.removeListener("end", fnOnEnd);
 					
-					return mxResult;
-				}
-				catch(error)
-				{
-					self.onError(query.sql || query, new Date().getTime() - nStartUnixTimeMilliseconds, error);
 					
-					throw error;
-				}
-			};
-		}
+					if(error)
+					{
+						fnSaveDuration();
+						self.onError(sequence.sql, nDurationMilliseconds, error);
+					}
+					else
+					{
+						let nAffectedRows = 0;
+						let nChangedRows = 0;
+						let nFetchedRows = 0;
+						if(sequence._results && sequence._results[0])
+						{
+							if(sequence._results[0].length)
+							{
+								nFetchedRows = sequence._results[0].length;
+							}
+							else if(sequence._results[0].constructor && sequence._results[0].constructor.name === "OkPacket")
+							{
+								nAffectedRows = sequence._results[0].affectedRows;
+								nChangedRows = sequence._results[0].changedRows;
+							}
+						}
+						
+						fnSaveDuration();
+						self.onResult(sequence.sql, nDurationMilliseconds, nFetchedRows, nAffectedRows, nChangedRows);
+					}
+				};
+				
+			
+				sequence.on("fields", fnSaveDuration);
+				sequence.on("error", fnSaveDuration);
+				sequence.on("error", fnOnEnd);
+				sequence.on("error", fnOnError);
+				sequence.on("end", fnOnEnd);
+			}		
+		});
 	}
 };
 

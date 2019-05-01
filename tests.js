@@ -30,7 +30,7 @@ performanceCounters.onQuery();
 assert.strictEqual(performanceCounters.runningQueriesCount, 2);
 
 
-performanceCounters.onResult("SELECT 1 FROM table", /*nDurationMilliseconds*/ 100, /*mxResult*/ [1, 2, 3]);
+performanceCounters.onResult("SELECT 1 FROM table", /*nDurationMilliseconds*/ 100, /*nFetchedRows*/ 1);
 assert.strictEqual(performanceCounters.runningQueriesCount, 1);
 
 
@@ -46,7 +46,9 @@ const objControl = {
 		errorMillisecondsTotal: 0,
 		successMillisecondsAverage: 50,
 		errorMillisecondsAverage: 0,
-		rowsFetched: 3
+		fetchedRows: 1,
+		affectedRows: 0,
+		changedRows: 0
 	},
 	"SELECT ? FROM another_table": {
 		successCount: 0,
@@ -55,7 +57,9 @@ const objControl = {
 		errorMillisecondsTotal: 3,
 		successMillisecondsAverage: 0,
 		errorMillisecondsAverage: 3,
-		rowsFetched: 0
+		fetchedRows: 0,
+		affectedRows: 0,
+		changedRows: 0
 	}
 };
 

@@ -19,7 +19,9 @@ The database is accessible as a Map on the `PerformanceCounters.metrics` propert
 		errorMillisecondsTotal: 0,
 		successMillisecondsAverage: 50,
 		errorMillisecondsAverage: 0,
-		rowsFetched: 3
+		fetchedRows: 1,
+		affectedRows: 0,
+		changedRows: 0
 	},
 	"SELECT ? FROM another_table": {
 		successCount: 0,
@@ -28,7 +30,9 @@ The database is accessible as a Map on the `PerformanceCounters.metrics` propert
 		errorMillisecondsTotal: 3,
 		successMillisecondsAverage: 0,
 		errorMillisecondsAverage: 3,
-		rowsFetched: 0
+		fetchedRows: 0,
+		affectedRows: 0,
+		changedRows: 0
 	}
 }
 ```
@@ -83,7 +87,7 @@ performanceCounters.clear();
 
 
 ## Usage with promise-mysql 
-If using MySQL and using [promise-mysql](https://www.npmjs.com/package/promise-mysql), you may use conveniently use the `PerformanceCounters.monkeyPatchPromiseMySQLJSConnection()` function to get started rapidly.
+If using MySQL and using [promise-mysql](https://www.npmjs.com/package/promise-mysql), you may use conveniently use the `PerformanceCounters.onMySQLPromiseConnection()` function to get started rapidly.
 
 
 ```JavaScript
@@ -95,7 +99,7 @@ const pool = MySQL.createPool(mysqljsConfigObject);
 pool.on(
 	"connection", 
 	(connection) => {
-		PerformanceCounters.monkeyPatchPromiseMySQLJSConnection(connection);
+		PerformanceCounters.onMySQLPromiseConnection(connection);
 
 		/* [...] */
 	}
@@ -104,10 +108,10 @@ pool.on(
 (async() => {
 	const connection = await MySQL.createConnection(mysqljsConfigObject);
 
-	PerformanceCounters.monkeyPatchPromiseMySQLJSConnection(connection);
+	PerformanceCounters.onMySQLPromiseConnection(connection.connection);
 
 	/* [...] */
 })();
 ```
 
-See [PerformanceCounters.js](./src/PerformanceCounters.js) for how `PerformanceCounters.monkeyPatchPromiseMySQLJSConnection()` works.
+See [PerformanceCounters.js](./src/PerformanceCounters.js) for how `PerformanceCounters.onMySQLPromiseConnection()` works.
