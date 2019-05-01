@@ -37,6 +37,8 @@ The database is accessible as a Map on the `PerformanceCounters.metrics` propert
 }
 ```
 
+The above object format ca be rendered in a live HTML table in browsers using [sql-performance-counters-ui](https://github.com/oxygen/sql-performance-counters-ui).
+
 ## Installation:
 
 ```shell
@@ -115,3 +117,4 @@ pool.on(
 ```
 
 See [PerformanceCounters.js](./src/PerformanceCounters.js) for how `PerformanceCounters.onMySQLPromiseConnection()` works.
+810279
