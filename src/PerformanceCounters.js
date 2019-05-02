@@ -193,6 +193,8 @@ class PerformanceCounters
 				let nDurationMilliseconds = 0;
 				let error = null;
 				
+				let bHandled = false;
+				
 				const fnSaveDuration = () => {
 					if(!nDurationMilliseconds)
 					{
@@ -202,14 +204,21 @@ class PerformanceCounters
 				
 				
 				const fnOnError = (_error) => {
+					fnSaveDuration();
 					error = _error;
 				};
 				
 				const fnOnEnd = () => {
+					if(bHandled)
+					{
+						return;
+					}
+					
+					bHandled = true;
+					
 					sequence.removeListener("fields", fnSaveDuration);
-					sequence.removeListener("error", fnSaveDuration);
-					sequence.removeListener("error", fnOnEnd);
 					sequence.removeListener("error", fnOnError);
+					sequence.removeListener("error", fnOnEnd);
 					sequence.removeListener("end", fnOnEnd);
 					
 					
