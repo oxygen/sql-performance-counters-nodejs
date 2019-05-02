@@ -1,6 +1,6 @@
 {
   "name": "sql-performance-counters",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Simple performance metrics for SQL queries.",
   "main": "index.js",
   "scripts": {
