@@ -73,7 +73,7 @@ performanceCounters.onQuery();
 console.log(performanceCounters.runningQueriesCount);
 
 
-performanceCounters.onResult("SELECT 1 FROM table", /*nDurationMilliseconds*/ 100, /*mxResult*/ [1, 2, 3]);
+performanceCounters.onResult("SELECT 1 FROM table", /*nDurationMilliseconds*/ 100, /*nFetchedRows*/ 0);
 console.log(performanceCounters.runningQueriesCount);
 
 performanceCounters.onError("SELECT 1 FROM another_table", /*nDurationMilliseconds*/ 53, /*error*/ new Error("test"));
